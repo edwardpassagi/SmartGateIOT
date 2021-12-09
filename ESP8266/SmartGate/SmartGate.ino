@@ -4,8 +4,7 @@
 
 #define SS_PIN 4  //D2
 #define RST_PIN 5 //D1
-#define SD2 11
-#define SD3 12
+#define SD3 10
 #define allowLCD true //enable lcd, disable when debugging
 
 #include <SPI.h>
@@ -16,7 +15,7 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 
-const int RS = D3, EN = D4, d4 = D0, d5 = D8, d6 = D9, d7 = D10;
+const int RS = D3, EN = D4, d4 = D0, d5 = SD3, d6 = D9, d7 = D10;
 // D9 is RX, D10 is TX
 LiquidCrystal lcd(RS, EN, d4, d5, d6, d7); // Create LED panel instance
 
@@ -25,7 +24,7 @@ int statuss = 0;
 int out = 0;
 
 // Active buzzer
-const int BUZZER = 10;
+const int BUZZER = D8;
 
 // WiFi Credentials
 const char* ssid = "hacker";
@@ -43,9 +42,8 @@ void setup()
   initializer();
   Serial.println("Ready to scan:");
   
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Scan Ready");
+  lcdLine1("Scan Ready");
+  durationBeep(200);
 }
 
 void loop()
@@ -70,9 +68,8 @@ void loop()
   }
 
   // cleared sequence, ready to scan again
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Scan Ready");
+  lcdLine1("Scan Ready");
+  durationBeep(200);
 }
 
 /*
@@ -89,6 +86,11 @@ void initializer()
   // this line overrides our serial monitor output!
   if (allowLCD) lcd.begin(16, 2); // Initiate LCD panel
 
+  connectToWiFi();
+}
+
+void connectToWiFi()
+{
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     lcdConnectingBlink();
@@ -98,7 +100,6 @@ void initializer()
   Serial.print("WiFi connected - ESP IP address: ");
   Serial.println(WiFi.localIP());
 }
-
 void lcdConnectingBlink()
 {
   // print on lcd
@@ -174,6 +175,9 @@ bool isValidUid(String UID)
     }
     else {
       Serial.println("WiFi Disconnected");
+      lcdLine1("WiFi disc..");
+      delay(1000);
+      connectToWiFi();
     }
     lastTime = millis();
   }
@@ -188,14 +192,14 @@ bool isValidUid(String UID)
 void authorizedSequence()
 {
   Serial.println("Authenticated");
-  Serial.println("Welcome, " + authorizedName);
-  digitalWrite(BUZZER,HIGH);
+  Serial.println("Hi, " + authorizedName);
+  authorizedBeep();
   // print on lcd
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Door Unlocking");
   lcd.setCursor(0, 1);
-  lcd.print("Welcome, " + authorizedName);
+  lcd.print("Hi, " + authorizedName);
 
   statuss = 1;
 
@@ -203,6 +207,16 @@ void authorizedSequence()
   delay(5000);
 }
 
+void authorizedBeep()
+{
+  for (int i = 0; i < 3; i++)
+  {
+    digitalWrite(BUZZER,HIGH);
+    delay(50);
+    digitalWrite(BUZZER,LOW);
+    delay(50);
+  }
+}
 /*
    Sequence upon rejection.
 */
@@ -210,6 +224,7 @@ void rejectedSequence()
 {
   Serial.println(" Access Denied ");
 
+  durationBeep(500);
   // print on lcd
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -217,4 +232,18 @@ void rejectedSequence()
 
   // some delay before user can retry
   delay (3000);
+}
+
+void durationBeep(int milliseconds)
+{
+  digitalWrite(BUZZER,HIGH);
+  delay(milliseconds);
+  digitalWrite(BUZZER,LOW);
+}
+
+void lcdLine1(String content)
+{
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(content);
 }
