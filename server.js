@@ -7,7 +7,7 @@ import mongoUtil from "./utils/database.js";
  * defined in routes/routes.js file.
  */
 
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 1880;
 
 mongoUtil.connectToServer(function (err, client) {
   if (err) console.log("Failed to connect to server: ", err);

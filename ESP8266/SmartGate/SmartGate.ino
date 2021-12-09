@@ -6,7 +6,7 @@
 #define RST_PIN 5 //D1
 #define SD2 11
 #define SD3 12
-#define allowLCD false //enable lcd, disable when debugging
+#define allowLCD true //enable lcd, disable when debugging
 
 #include <SPI.h>
 #include <MFRC522.h>
@@ -14,6 +14,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <ArduinoJson.h>
 
 const int RS = D3, EN = D4, d4 = D0, d5 = D8, d6 = D9, d7 = D10;
 // D9 is RX, D10 is TX
@@ -23,6 +24,9 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 int statuss = 0;
 int out = 0;
 
+// Active buzzer
+const int BUZZER = 10;
+
 // WiFi Credentials
 const char* ssid = "hacker";
 const char* password = "nicememe";
@@ -31,31 +35,44 @@ const char* password = "nicememe";
 unsigned long lastTime = 0;
 unsigned long timerDelay = 1000;
 
+// Authorized User variable
+String authorizedName = "";
+
 void setup()
 {
   initializer();
-  Serial.println("Setting up serial output...");
+  Serial.println("Ready to scan:");
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Scan Ready");
 }
 
 void loop()
 {
+  digitalWrite(BUZZER,LOW);
+  
   // Look for new cards or select one of the cards
   if ( !mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
   {
     return;
   }
   //Show UID on serial monitor
-  String content = getContent();
+  String UID = getUid();
 
   // TODO: make HTTP get call to validate entry
-  bool isPermitted = validateContent(content);
-  if (isPermitted) //change UID of the card that you want to give access
+  if (isValidUid(UID)) //change UID of the card that you want to give access
   {
     authorizedSequence();
   }
   else   {
     rejectedSequence();
   }
+
+  // cleared sequence, ready to scan again
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Scan Ready");
 }
 
 /*
@@ -66,13 +83,15 @@ void initializer()
   Serial.begin(9600);   // Initiate a serial communication
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
-
+  pinMode(BUZZER, OUTPUT); // Initiate Buzzer
+  digitalWrite(BUZZER,LOW);
+  
   // this line overrides our serial monitor output!
   if (allowLCD) lcd.begin(16, 2); // Initiate LCD panel
 
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    lcdConnectingBlink();
     Serial.print(".");
   }
   Serial.println("");
@@ -80,10 +99,21 @@ void initializer()
   Serial.println(WiFi.localIP());
 }
 
+void lcdConnectingBlink()
+{
+  // print on lcd
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("WiFi Conn...");
+  delay(500);
+  lcd.clear();
+  delay(300);
+}
+
 /*
    getContent returns the UID of the current card being read.
 */
-String getContent()
+String getUid()
 {
   String content = "";
   Serial.println();
@@ -97,18 +127,20 @@ String getContent()
     content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
   content.toUpperCase();
+  String UID = content.substring(1);
+  UID.replace(" ","-");
   Serial.println();
-  return content;
+  return UID;
 }
 
 /**
    validateContent() makes determines wether current UID exists in our database or not.
 */
-bool validateContent(String content)
+bool isValidUid(String UID)
 {
   //TODO: add HTTP get call to validate with database
-  String uri = "http://b0d8-130-126-255-165.ngrok.io/employee";
-
+  String uri = "http://3f19-76-191-30-34.ngrok.io/validate?uid=" + UID;
+  Serial.println(uri);
   if ((millis() - lastTime) > timerDelay) {
     //Check WiFi connection status
     if(WiFi.status()== WL_CONNECTED){
@@ -116,7 +148,7 @@ bool validateContent(String content)
       HTTPClient http;
       
       // Your Domain name with URL path or IP address with path
-      http.begin(client, uri.c_str());
+      http.begin(client, uri);
       
       // Send HTTP GET request
       int httpResponseCode = http.GET();
@@ -124,9 +156,14 @@ bool validateContent(String content)
       if (httpResponseCode>0) {
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
-        String payload = http.getString();
-        Serial.println(payload);
-        if (httpResponseCode == 200) return true;
+        
+        DynamicJsonDocument doc(2048);
+        deserializeJson(doc, http.getStream());;
+        
+        if (httpResponseCode == 200) {
+          authorizedName = doc["name"].as<String>();
+          return true;
+        }
       }
       else {
         Serial.print("Error code: ");
@@ -150,16 +187,20 @@ bool validateContent(String content)
 */
 void authorizedSequence()
 {
-  Serial.print("Authenticated");
-
+  Serial.println("Authenticated");
+  Serial.println("Welcome, " + authorizedName);
+  digitalWrite(BUZZER,HIGH);
   // print on lcd
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Access Granted");
+  lcd.print("Door Unlocking");
   lcd.setCursor(0, 1);
-  lcd.print("Welcome, Mo!");
+  lcd.print("Welcome, " + authorizedName);
 
   statuss = 1;
+
+  // simulate time it takes to open and close door
+  delay(5000);
 }
 
 /*
@@ -173,4 +214,7 @@ void rejectedSequence()
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Access Denied!");
+
+  // some delay before user can retry
+  delay (3000);
 }
