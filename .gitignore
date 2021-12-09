@@ -1,4 +1,5 @@
 app/bin/
+# Arduino
 app/pde.jar
 build/macosx/work/
 arduino-core/bin/
@@ -68,3 +69,25 @@ avr-toolchain-*.zip
 manifest.mf
 nbbuild.xml
 nbproject
+
+# Backend System
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.nyc_output
+
+# macOS
+.DS_Store
+
+
+# sensitive information
+loginCredentials.js
+sensitiveConstants.js

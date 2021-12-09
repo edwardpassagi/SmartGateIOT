@@ -1,0 +1,457 @@
+[
+    {
+        "id": "828137e25a18925b",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b4629e71167e4467",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f6c122ad.621c98",
+        "type": "mongodb2",
+        "uri": "",
+        "name": "db",
+        "options": "",
+        "parallelism": "-1"
+    },
+    {
+        "id": "20ae9f5332ed7bce",
+        "type": "http in",
+        "z": "828137e25a18925b",
+        "name": "",
+        "url": "/employee",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 320,
+        "y": 400,
+        "wires": [
+            [
+                "ef01aa659ed6c413"
+            ]
+        ]
+    },
+    {
+        "id": "42beda9127dbca1c",
+        "type": "http response",
+        "z": "828137e25a18925b",
+        "name": "getResponse",
+        "statusCode": "200",
+        "headers": {},
+        "x": 990,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "1b19358c7bd64c87",
+        "type": "function",
+        "z": "828137e25a18925b",
+        "name": "getUID",
+        "func": "return payload.uid;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ef01aa659ed6c413",
+        "type": "template",
+        "z": "828137e25a18925b",
+        "name": "page",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{ \"uid\": {{{payload.uid}}} }",
+        "x": 630,
+        "y": 400,
+        "wires": [
+            [
+                "52b85635e2f092cd"
+            ]
+        ]
+    },
+    {
+        "id": "52b85635e2f092cd",
+        "type": "change",
+        "z": "828137e25a18925b",
+        "name": "Set Headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "headers.content-type",
+                "pt": "msg",
+                "to": "application/json",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 810,
+        "y": 400,
+        "wires": [
+            [
+                "42beda9127dbca1c"
+            ]
+        ]
+    },
+    {
+        "id": "93eec6fcacded0a2",
+        "type": "mongodb2 in",
+        "z": "828137e25a18925b",
+        "service": "_ext_",
+        "configNode": "f6c122ad.621c98",
+        "name": "",
+        "collection": "CS437Final",
+        "operation": "",
+        "x": 560,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9568c2b2.ae4098",
+        "type": "http in",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "url": "/update",
+        "method": "put",
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 360,
+        "wires": [
+            [
+                "d36ab408.cd59f8"
+            ]
+        ]
+    },
+    {
+        "id": "af08effc.5fdca8",
+        "type": "mongodb2 in",
+        "z": "b4629e71167e4467",
+        "service": "_ext_",
+        "configNode": "f6c122ad.621c98",
+        "name": "",
+        "collection": "employees",
+        "operation": "update",
+        "x": 996.9998779296875,
+        "y": 360.13330078125,
+        "wires": [
+            [
+                "70b86fd6.3ff418"
+            ]
+        ]
+    },
+    {
+        "id": "80b7d10e.159df",
+        "type": "http response",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "x": 1475.9998779296875,
+        "y": 358.7332763671875,
+        "wires": []
+    },
+    {
+        "id": "9197d5cb.7dbb78",
+        "type": "function",
+        "z": "b4629e71167e4467",
+        "name": "update request",
+        "func": "/*\nmsg.result correspond à l'objet mis à jour,\nle delete permet de supprimer la propriété\n_id de l'objet, en effet l'_id est géré directement\npar le noued OjectId\npour la requète update  \non doit fournir un tableau \n[\n<query>,\n<valeur mises à jour>\n]\n\nici ce sera de la forme:\n[\n    {_id:ObjectId(\"xxx\")},\n    {\"nom\": \"toto\", \"prenom\": \"tutu\", \n        \"immatriculation\": \"AB123CD\", \n        \"heure\": null, \"minute\": null\n    }\n]\n*/\nmsg.result=msg.req.body;\ndelete msg.req.body._id;\nmsg.payload=[\n   msg.payload,\n   msg.req.body\n    ];\nreturn msg;\n\n",
+        "outputs": "1",
+        "noerr": 0,
+        "x": 766.7666015625,
+        "y": 360.3665771484375,
+        "wires": [
+            [
+                "af08effc.5fdca8"
+            ]
+        ]
+    },
+    {
+        "id": "d36ab408.cd59f8",
+        "type": "function",
+        "z": "b4629e71167e4467",
+        "name": "extract _id",
+        "func": "msg._id=msg.payload._id;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 417.88336181640625,
+        "y": 360.7999267578125,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "79d55fc7.1ce2f8",
+        "type": "objectid",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "selectedProperty": "",
+        "x": 571.8833312988281,
+        "y": 360.4666748046875,
+        "wires": [
+            [
+                "9197d5cb.7dbb78"
+            ]
+        ]
+    },
+    {
+        "id": "a8dde467.e5dcd8",
+        "type": "template",
+        "z": "b4629e71167e4467",
+        "name": "Web Template",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <title>Licence Plate</title>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.min.css\" />\n    <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js\"></script>\n    <script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css\" />\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css\" />\n    <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js\"></script>\n\n    <script type=\"text/javascript\">\n        $(function () {\n            var db = {{#payload}}{{{.}}}{{/payload}};\n                $(\"#jsgrid\").jsGrid({\n                    width: \"100%\",\n                    inserting: true,\n                    editing: true,\n                    sorting: true,\n                    paging: true,\n\n                    data: db,\n\n                    fields: [\n                        { title:\"Name\", name: \"name\", type: \"text\", width: 50 },\n                        { title:\"RFID\", name: \"rfid\", type: \"text\", width: 50 },\n                        { title:\"Plaque\", name: \"immatriculation\", type: \"text\", width: 50 },\n                        { title:\"Heure\", name: \"heure\", type:\"number\", width: 25},\n                        { title:\"Minute\", align:\"left\",  name: \"minute\", type:\"number\" , width: 25},\n                        { type: \"control\" }\n                    ],\n               \n                    controller: {\n                        insertItem: function(item) {\n                            return $.ajax({\n                                type: \"POST\",\n                                url: \"/insert\",\n                                data: item\n                            });\n                        },\n                        updateItem: function(item) {\n                           return $.ajax({\n                                type: \"PUT\",\n                                url: \"/update\",\n                                data: item\n                            });\n                        },\n                        deleteItem: function(item) {\n                            return $.ajax({\n                                type: \"DELETE\",\n                                url: \"/delete\",\n                                data: item\n                            });\n                        }\n                    }   \n                });\n            });\n    \n  </script>\n</head>\n<body class=\"container\">\n    <section class=\"row\">\n        \n        <div class=\"col-md-6\"></div>\n        <div class=\"col-md-6\" id=\"jsgrid\">\n        </div>\n    </section>\n</body>\n</html>\n\n",
+        "x": 1329.7666015625,
+        "y": 233.5999298095703,
+        "wires": [
+            [
+                "e4bd0337.229be8"
+            ]
+        ]
+    },
+    {
+        "id": "3fa8dafa.229966",
+        "type": "http in",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "url": "/employees",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 246.76666259765625,
+        "y": 234.5999298095703,
+        "wires": [
+            [
+                "22d679eb.c41196"
+            ]
+        ]
+    },
+    {
+        "id": "e4bd0337.229be8",
+        "type": "http response",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "x": 1510.7666015625,
+        "y": 234.83326721191406,
+        "wires": []
+    },
+    {
+        "id": "22d679eb.c41196",
+        "type": "mongodb2 in",
+        "z": "b4629e71167e4467",
+        "service": "_ext_",
+        "configNode": "f6c122ad.621c98",
+        "name": "",
+        "collection": "employees",
+        "operation": "find.toArray",
+        "x": 834.88330078125,
+        "y": 234.2999267578125,
+        "wires": [
+            [
+                "afbe2510.245be8"
+            ]
+        ]
+    },
+    {
+        "id": "afbe2510.245be8",
+        "type": "json",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 1136.7666015625,
+        "y": 233.2999267578125,
+        "wires": [
+            [
+                "a8dde467.e5dcd8"
+            ]
+        ]
+    },
+    {
+        "id": "70b86fd6.3ff418",
+        "type": "function",
+        "z": "b4629e71167e4467",
+        "name": "callback response",
+        "func": "/*\npour que la jsGrid soit rafraichie, \nil faut lui envoyer l'objet qui a été mis à jour\n*/\nmsg.payload=msg.result;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1274.7666015625,
+        "y": 359.5166015625,
+        "wires": [
+            [
+                "80b7d10e.159df"
+            ]
+        ]
+    },
+    {
+        "id": "713c7f1e.91be6",
+        "type": "mongodb2 in",
+        "z": "b4629e71167e4467",
+        "service": "_ext_",
+        "configNode": "f6c122ad.621c98",
+        "name": "",
+        "collection": "employees",
+        "operation": "insert",
+        "x": 1013.8831787109375,
+        "y": 456.4332275390625,
+        "wires": [
+            [
+                "e53bf9ab.ef35f8"
+            ]
+        ]
+    },
+    {
+        "id": "66d97ed7.39f1c",
+        "type": "http response",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "x": 1484.8831787109375,
+        "y": 455.033203125,
+        "wires": []
+    },
+    {
+        "id": "a60ce791.6f5ae8",
+        "type": "http in",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "url": "/insert",
+        "method": "post",
+        "swaggerDoc": "",
+        "x": 229.76666259765625,
+        "y": 450.25,
+        "wires": [
+            [
+                "713c7f1e.91be6"
+            ]
+        ]
+    },
+    {
+        "id": "5f79d9fd.25c4f",
+        "type": "http in",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "url": "/delete",
+        "method": "delete",
+        "swaggerDoc": "",
+        "x": 242.76666259765625,
+        "y": 547.2499694824219,
+        "wires": [
+            [
+                "f19e351.734e448"
+            ]
+        ]
+    },
+    {
+        "id": "6facca77.95617c",
+        "type": "mongodb2 in",
+        "z": "b4629e71167e4467",
+        "service": "_ext_",
+        "configNode": "f6c122ad.621c98",
+        "name": "",
+        "collection": "employees",
+        "operation": "deleteOne",
+        "x": 1014.88330078125,
+        "y": 546.2998962402344,
+        "wires": [
+            [
+                "17b5b5c4.a8a7b2"
+            ]
+        ]
+    },
+    {
+        "id": "f19e351.734e448",
+        "type": "function",
+        "z": "b4629e71167e4467",
+        "name": "extract _id",
+        "func": "msg._id=msg.payload._id;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 439.8833312988281,
+        "y": 547.2998962402344,
+        "wires": [
+            [
+                "e5efe654.b0a9b8"
+            ]
+        ]
+    },
+    {
+        "id": "e5efe654.b0a9b8",
+        "type": "objectid",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "selectedProperty": "",
+        "x": 611.88330078125,
+        "y": 546.9666442871094,
+        "wires": [
+            [
+                "6facca77.95617c"
+            ]
+        ]
+    },
+    {
+        "id": "17b5b5c4.a8a7b2",
+        "type": "http response",
+        "z": "b4629e71167e4467",
+        "name": "",
+        "x": 1484.7666015625,
+        "y": 541.8332214355469,
+        "wires": []
+    },
+    {
+        "id": "e53bf9ab.ef35f8",
+        "type": "function",
+        "z": "b4629e71167e4467",
+        "name": "callback response",
+        "func": "/*\npour que la jsGrid soit rafraichie, \nil faut lui envoyer l'objet qui a été mis à jour\n*/\nmsg.payload=msg.req.body;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1281.88330078125,
+        "y": 456.2999267578125,
+        "wires": [
+            [
+                "66d97ed7.39f1c"
+            ]
+        ]
+    },
+    {
+        "id": "ba1ead96.ff6f38",
+        "type": "comment",
+        "z": "b4629e71167e4467",
+        "name": "database collection information",
+        "info": "The collection is named LicensePlate. \nEach document format is :\n```JavaScript\n{\n    \"_id\": ObjectID(\"585a4732ac11400192a60b85\"),\n    \"nom\": \"riotte\",\n    \"prenom\": \"françois\",\n    \"immatriculation\": \"123456\",\n    \"heure\": \"13\",\n    \"minute\": \"30\"\n}\n```",
+        "x": 986.7666320800781,
+        "y": 156.2999267578125,
+        "wires": []
+    }
+]
