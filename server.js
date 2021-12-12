@@ -15,7 +15,7 @@ mongoUtil.connectToServer(function (err, client) {
 
   app.use(router);
 
-  app.listen(DEFAULT_PORT, function () {
+  app.listen(process.env.PORT || DEFAULT_PORT, function () {
     console.log("Server is running on localhost:", DEFAULT_PORT);
   });
 });
