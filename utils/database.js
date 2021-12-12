@@ -1,21 +1,19 @@
 import { MongoClient } from "mongodb";
-
-// Only import sensitive constant locally
-let { default: mongoDbAuth } = await import("../sensitiveConstants.js");
+import dotenv from "dotenv";
+dotenv.config();
 
 var uri =
-  `mongodb+srv://${process.env.dbUsername || mongoDbAuth.username}:${
-    process.env.dbPassword || mongoDbAuth.password
-  }` +
-  `@sellify.5znrc.mongodb.net/${process.env.dbName || mongoDbAuth.dbName}` +
+  `mongodb+srv://${process.env.dbUsername}:${process.env.dbPassword}` +
+  `@sellify.5znrc.mongodb.net/${process.env.dbName}` +
   `?retryWrites=true&w=majority`;
 
 var _db;
+console.log(uri);
 
 const mongoUtil = {
   connectToServer: function (callback) {
     MongoClient.connect(uri, function (err, client) {
-      _db = client.db(mongoDbAuth.dbName);
+      _db = client.db(process.env.dbName);
       return callback(err);
     });
   },

@@ -91,3 +91,4 @@ web-build/
 # sensitive information
 loginCredentials.js
 sensitiveConstants.js
+.env
