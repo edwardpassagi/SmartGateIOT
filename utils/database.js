@@ -2,8 +2,10 @@ import { MongoClient } from "mongodb";
 import mongoDbAuth from "../sensitiveConstants.js";
 
 var uri =
-  `mongodb+srv://${mongoDbAuth.username}:${mongoDbAuth.password}` +
-  `@sellify.5znrc.mongodb.net/${mongoDbAuth.dbName}` +
+  `mongodb+srv://${process.env.dbUsername || mongoDbAuth.username}:${
+    process.env.dbPassword || mongoDbAuth.password
+  }` +
+  `@sellify.5znrc.mongodb.net/${process.env.dbName || mongoDbAuth.dbName}` +
   `?retryWrites=true&w=majority`;
 
 var _db;
