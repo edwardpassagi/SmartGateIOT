@@ -1,5 +1,7 @@
 import { MongoClient } from "mongodb";
-import mongoDbAuth from "../sensitiveConstants.js";
+
+// Only import sensitive constant locally
+let { default: mongoDbAuth } = await import("../sensitiveConstants.js");
 
 var uri =
   `mongodb+srv://${process.env.dbUsername || mongoDbAuth.username}:${
