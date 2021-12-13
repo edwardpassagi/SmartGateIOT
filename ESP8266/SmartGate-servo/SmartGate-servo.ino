@@ -1,7 +1,7 @@
-/*
-    Created by TheCircuit
-*/
-
+/**
+ * This script is responsible to manage the authentication flow
+ * and core logic of our ESP8266 microcontroller.
+ */
 #define SS_PIN 4  //D2
 #define RST_PIN 5 //D1
 #define SD3 10
@@ -14,6 +14,7 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
+#include <Servo.h>
 
 const int RS = D3, EN = D4, d4 = D0, d5 = SD3, d6 = D9, d7 = D10;
 // D9 is RX, D10 is TX
@@ -23,8 +24,9 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 int statuss = 0;
 int out = 0;
 
-// Active buzzer
-const int BUZZER = D8;
+// Active servo
+Servo servo;
+const int SERVO_PIN = D8;
 
 // WiFi Credentials
 const char* ssid = "hacker";
@@ -43,13 +45,10 @@ void setup()
   Serial.println("Ready to scan:");
   
   lcdLine1("Scan Ready");
-  durationBeep(200);
 }
 
 void loop()
-{
-  digitalWrite(BUZZER,LOW);
-  
+{ 
   // Look for new cards or select one of the cards
   if ( !mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
   {
@@ -58,7 +57,6 @@ void loop()
   //Show UID on serial monitor
   String UID = getUid();
 
-  // TODO: make HTTP get call to validate entry
   if (isValidUid(UID)) //change UID of the card that you want to give access
   {
     authorizedSequence();
@@ -69,7 +67,6 @@ void loop()
 
   // cleared sequence, ready to scan again
   lcdLine1("Scan Ready");
-  durationBeep(200);
 }
 
 /*
@@ -80,8 +77,9 @@ void initializer()
   Serial.begin(9600);   // Initiate a serial communication
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
-  pinMode(BUZZER, OUTPUT); // Initiate Buzzer
-  digitalWrite(BUZZER,LOW);
+  
+  servo.attach(D8); // Initiate Servo
+  servo.write(0);
   
   // this line overrides our serial monitor output!
   if (allowLCD) lcd.begin(16, 2); // Initiate LCD panel
@@ -140,7 +138,7 @@ String getUid()
 bool isValidUid(String UID)
 {
   //TODO: add HTTP get call to validate with database
-  String uri = "http://3f19-76-191-30-34.ngrok.io/validate?uid=" + UID;
+  String uri = "http://pure-atoll-60128.herokuapp.com/validate?uid=" + UID;
   Serial.println(uri);
   if ((millis() - lastTime) > timerDelay) {
     //Check WiFi connection status
@@ -193,7 +191,7 @@ void authorizedSequence()
 {
   Serial.println("Authenticated");
   Serial.println("Hi, " + authorizedName);
-  authorizedBeep();
+  
   // print on lcd
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -201,22 +199,18 @@ void authorizedSequence()
   lcd.setCursor(0, 1);
   lcd.print("Hi, " + authorizedName);
 
-  statuss = 1;
-
   // simulate time it takes to open and close door
+  doorOpen();
   delay(5000);
+  doorClose();
 }
 
-void authorizedBeep()
+void doorOpen()
 {
-  for (int i = 0; i < 3; i++)
-  {
-    digitalWrite(BUZZER,HIGH);
-    delay(50);
-    digitalWrite(BUZZER,LOW);
-    delay(50);
-  }
+  servo.write(180);
+  delay(50);
 }
+
 /*
    Sequence upon rejection.
 */
@@ -224,7 +218,6 @@ void rejectedSequence()
 {
   Serial.println(" Access Denied ");
 
-  durationBeep(500);
   // print on lcd
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -233,12 +226,10 @@ void rejectedSequence()
   // some delay before user can retry
   delay (3000);
 }
-
-void durationBeep(int milliseconds)
+void doorClose()
 {
-  digitalWrite(BUZZER,HIGH);
-  delay(milliseconds);
-  digitalWrite(BUZZER,LOW);
+  servo.write(0);
+  delay(50);
 }
 
 void lcdLine1(String content)

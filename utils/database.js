@@ -8,7 +8,6 @@ var uri =
   `?retryWrites=true&w=majority`;
 
 var _db;
-console.log(uri);
 
 const mongoUtil = {
   connectToServer: function (callback) {
