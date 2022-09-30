@@ -92,3 +92,4 @@ web-build/
 loginCredentials.js
 sensitiveConstants.js
 .env
+utils/database.js
