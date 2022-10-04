@@ -7,6 +7,7 @@ This repository contains the source code of our SmartGate Arduino IoT.
 _Intrance_ SmartGate works by using RC522 RFID module alongside ESP8266 microcontroller for wireless communication. We utilize **ExpressJS** as our backend system that communicates with our database. User's information are stored in **MongoDB Atlas**.
 
 Below is the logic flow behind our system:
+
 ![Control Logic](images/logic-diagram.png "Control Logic")
 
 ## Project Setup
@@ -39,6 +40,7 @@ Navigate to thte root of the project and run `npm start` to start the backend se
 ### ESP8266 & Board Setup
 
 Here's the schematic of our _Intrance_ SmartGate:
+
 ![Intrance Schematics](images/schematic.png "Intrance SmartGate Schematic")
 
 Once the board has been setup, navigate to `ESP8266/SmartGate-servo` and open `SmartGate-servo.ino` using **Arduino IDE**. You can run the script directly from the IDE.
