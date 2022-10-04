@@ -37,6 +37,12 @@ Navigate to `utils/database.js` and change the credentials (_username, password,
 
 Navigate to thte root of the project and run `npm start` to start the backend service locally. `DEFAULT_PORT` is set to **1880**.
 
+The request is formatted as: _localhost:1880/validate?uid=D6-13-DD-30_ where the `uid` parameter is formed as _FF-FF-FF-FF_ (4 pairs of 2 hexadecimal characters, separated by dash).
+
+Feel free to test some UIDs by connecting to our live backend system:
+
+https://smartgate-backend.herokuapp.com/validate?uid=D6-13-DD-30
+
 ### ESP8266 & Board Setup
 
 Here's the schematic of our _Intrance_ SmartGate:
